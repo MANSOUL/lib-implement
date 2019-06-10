@@ -13,3 +13,11 @@
 ```
 // json/stringify.js
 ```
+
+## Promise
+
+### Promise
+
+```
+// promise/promise.js
+```

@@ -11,6 +11,7 @@
 <body>
   <script src="./json/stringify.js"></script>
   <script src="./json/parse.js"></script>
+  <script src="./promise/promise.js"></script>
   <script>
     console.log(parse(
       '{"a": 1, "b": "hello", "c": [1, 2, 3, [4, 5, 6, [99, 100]], {"k": 1}, [7, 8, 9], [10], {"haha": "heihei", "g": [90]}], "o": [88, 99], "d": {"e": false, "f": null, "g": null}, "e": []}'
@@ -28,6 +29,30 @@
       },
       h: [88, 99]
     }));
+  </script>
+  <script>
+    new P((resolve, reject) => {
+        setTimeout(() => reject('success 1'), 1000)
+      })
+      .then((result) => {
+        return new P((resolve, reject) => {
+          setTimeout(() => resolve(result + '-1'), 1000)
+        })
+      })
+      .then(r => console.log(r))
+      .then(result => console.log(result))
+      .catch(err => {
+        console.log('error', err)
+        return new P((resolve, reject) => {
+          setTimeout(() => resolve('h 1'), 1000)
+        })
+      })
+      .then((res) => console.log(res))
+      .then((res) => new P((resolve, reject) => {
+        setTimeout(() => resolve('-1'), 1000)
+      }))
+      .catch(err => console.log(err))
+      .then((res) => console.log(res))
   </script>
 </body>
 

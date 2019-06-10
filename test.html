@@ -1,12 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
+  <title>API TEST</title>
 </head>
+
 <body>
-  <script src="./parse.js"></script>
+  <script src="./json/stringify.js"></script>
+  <script src="./json/parse.js"></script>
+  <script>
+    console.log(parse(
+      '{"a": 1, "b": "hello", "c": [1, 2, 3, [4, 5, 6, [99, 100]], {"k": 1}, [7, 8, 9], [10], {"haha": "heihei", "g": [90]}], "o": [88, 99], "d": {"e": false, "f": null, "g": null}, "e": []}'
+      ));
+    console.log(stringify({
+      a: 1,
+      b: 'hello',
+      c: [
+        1, 2, 3, [4, 5, 6, {h: 'jack'}]
+      ],
+      d: {
+        e: false,
+        f: NaN,
+        g: null
+      },
+      h: [88, 99]
+    }));
+  </script>
 </body>
+
 </html>

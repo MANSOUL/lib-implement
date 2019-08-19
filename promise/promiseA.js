@@ -56,3 +56,29 @@ class PromiseA {
     return this;
   }
 }
+
+const oP = new PromiseA((resolve, reject) => {
+  setTimeout(() => resolve(1), 1000);
+});
+
+oP.then(step => ++step)
+  .then(step => ++step)
+  .then(step => {
+    console.log(step);
+    return step;
+  })
+  .finally(res => {
+    console.log('finally1: ', res);
+    return res;
+  })
+  .then(step => {
+    console.log(step);
+    return new PromiseA(
+      (resolve, reject) => reject('fail when step equals to: ' + step)  
+    )
+  })
+  .catch(error => {
+    console.log('error: ', error);
+    return error;
+  })
+  .finally(res => console.log('finally2: ', res));

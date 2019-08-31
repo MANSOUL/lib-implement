@@ -4,7 +4,7 @@ class PromiseA {
     this.queue = [];
     this.isPromiseA = true;
 
-    const _resolve = (ret) => {
+    const _resolve = ret => {
       if (this.state !== 'pending') return;
       this.state = 'fullfillled';
       while (this.queue.length) {
@@ -16,7 +16,7 @@ class PromiseA {
         }
       }
     }
-    const _reject = (ret) => {
+    const _reject = ret => {
       if (this.state !== 'pending') return;
       this.state = 'rejected';
       while (this.queue.length) {
@@ -29,8 +29,8 @@ class PromiseA {
       }
     }
     callback(
-      (...args) => setTimeout(() => _resolve(...args), 0),
-      (...args) => setTimeout(() => _reject(...args), 0),
+      args => setTimeout(() => _resolve(args), 0),
+      args => setTimeout(() => _reject(args), 0)
     );
   }
 
@@ -46,39 +46,64 @@ class PromiseA {
     return this;
   }
 
-  catch(onRejected) {
-    this.then(null, onRejected);
+  catch (onRejected) {
+    let lastHandler = this.queue[this.queue.length - 1];
+    if (!lastHandler.onRejected) {
+      lastHandler.onRejected = onRejected;
+    } else {
+      this.then(null, onRejected);
+    }
     return this;
-  }
-
+  } 
+  
   finally(onFinally) {
     this.then(onFinally, onFinally);
     return this;
   }
 }
 
-const oP = new PromiseA((resolve, reject) => {
-  setTimeout(() => resolve(1), 1000);
-});
+PromiseA.resolve = res => {
+  return new PromiseA(resolve => {
+    resolve(res);
+  });
+}
 
-oP.then(step => ++step)
-  .then(step => ++step)
-  .then(step => {
-    console.log(step);
-    return step;
-  })
-  .finally(res => {
-    console.log('finally1: ', res);
-    return res;
-  })
-  .then(step => {
-    console.log(step);
-    return new PromiseA(
-      (resolve, reject) => reject('fail when step equals to: ' + step)  
-    )
-  })
-  .catch(error => {
-    console.log('error: ', error);
-    return error;
-  })
-  .finally(res => console.log('finally2: ', res));
+PromiseA.reject = res => {
+  return new PromiseA((resolve, reject) => {
+    reject(res);
+  });
+}
+
+PromiseA.all = ps => {
+  return new PromiseA((resolve, reject) => {
+    let result = [];
+    ps.map(p => {
+      p
+        .then(res => {
+          result.push(res);
+          if (result.length === ps.length) {
+            resolve(result);
+          }
+        })
+        .catch(err => {
+          reject(err);
+        });
+    })
+  });
+}
+
+PromiseA.race = ps => {
+  return new PromiseA((resolve, reject) => {
+    ps.map(p => {
+      p
+        .then(res => {
+          resolve(res);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    })
+  });
+}
+
+module.exports = PromiseA;

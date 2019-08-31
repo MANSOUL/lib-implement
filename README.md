@@ -16,10 +16,10 @@
 
 ## Promise
 
-### Promise
+### PromiseA
 
 ```js
-// promise/promise.js
+// promise/promiseA.js
 ```
 
 ## Ease

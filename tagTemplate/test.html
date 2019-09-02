@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <script type="module">
+    import parse from './lexical.js';
+    import generate from './syntax.js';
+    let template = `
+      <div class="block">
+        <ul class="list">
+          <li class="list__item" data-index="0">Apple</li>  
+          <li class="list__item" data-index="1">Banana</li>  
+          <li class="list__item" data-index="2">Peach</li>  
+        </ul>  
+        <p class="block__desc">Fruit List</p>
+      </div>
+    `;
+    console.log(parse(template))
+    console.log(generate(parse(template)))
+  </script>
+</body>
+</html>

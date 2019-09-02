@@ -3,7 +3,7 @@ import { TAG_CLOSE, TAG_OPEN, TAG_VALUE, TAG_ATTR_NAME, TAG_ATTR_VALUE } from '.
 const REG_TAG_OPEN = /^<([\w]+)\s*([^>]*)\s*>/;
 const REG_TAG_CLOSE = /^<\/([\w]+)\s*>/;
 const REG_TAG_VALUE = /[^<]+/;
-const REG_TAG_ATTR = /([\w-]+)=([^\s]+)/g;
+const REG_TAG_ATTR = /([\w-]+)="([^\s]+)"/g;
 
 function trim(str) {
   return str.replace(/^\s+|\s+$/g, '');

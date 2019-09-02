@@ -1,5 +1,5 @@
 import { TAG_CLOSE, TAG_OPEN, TAG_VALUE, TAG_ATTR_NAME, TAG_ATTR_VALUE } from './tagType.js';
-import { arrToMap } from './utils';
+import { arrToMap } from './utils.js';
 
 let currentIndex, lookAhead, tokens;
 
@@ -23,7 +23,7 @@ const LL = {
   },
   tags (currentNode) {
     while (lookAhead) { // 在TAG_CLOSE后，处理多个token
-      let node = { type: lookAhead.value, value: null, props: [], children: [] };
+      let node = { type: lookAhead.value, value: null, props: null, children: [] };
       node = LL.tag(node);
       currentNode.children.push(node);
       if (lookAhead && lookAhead.type === TAG_CLOSE) {
@@ -53,7 +53,7 @@ const LL = {
       props.push(lookAhead.value);
       match(lookAhead.type);
       if (!lookAhead || (lookAhead.type !== TAG_ATTR_NAME && lookAhead.type !== TAG_ATTR_VALUE)) {
-        currentNode.props = props;
+        currentNode.props = arrToMap(props);
         break;
       }
     }

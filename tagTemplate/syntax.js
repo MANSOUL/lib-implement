@@ -17,7 +17,7 @@ const match = type => {
 
 const LL = {
   start () {
-    let node = { type: 'html', value: null, children: [] };
+    let node = { type: 'root', value: null, children: [] };
     LL.tags(node);
     return node;
   },

@@ -7,6 +7,29 @@
   <title>Document</title>
 </head>
 <body>
-  <script type="module" src="./t.js"></script>
+  <script type="module">
+    import {t, ast} from './t.js';
+    function render () {
+      let name = 'Fruit List';
+      let fruits = ['Apple', 'Banana', 'Peach'];
+      return ast(t`
+        <div class="block">
+          <ul class="list">
+            ${
+              fruits.map((f, index) => {
+                return t`<li class="list__item" data-index=${index}>
+                          ${
+                            f.split('').map(c => t`<span>${c}</span>`)
+                          }
+                        </li> `
+              })
+            }
+          </ul>  
+          <p class="block__desc">${name} ${null}</p>
+        </div>
+      `);
+    }
+    console.log(render());
+  </script>
 </body>
 </html>

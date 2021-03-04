@@ -25,10 +25,11 @@ function listDiff (newList, oldList) {
   let existChildren = [];
   let freeIndex = 0;
 
-  // 1. 判断就列表中的项是否存在，移除了或没移除
+  // 通过遍历旧列表，找出被移除的项目和新添加的项目
+  // 并将其存放到队列中
   oldList.map(item => {
     let key = getItemKey(item);
-    if (key) {
+    if (key) { 
       if (newKeyIndex.hasOwnProperty(key)) {
         existChildren.push(newList[newKeyIndex[key]]);
       } else {
@@ -39,9 +40,10 @@ function listDiff (newList, oldList) {
     }
   });
 
+  // 复制existChild用于后续操作
   let compareList = existChildren.slice(0);
 
-  // 2. null 为需要移除的项目
+  // 对existChildren中标记为null的项目进行移除标记
   compareList.map((item, index) => {
     if (item === null) {
       remove(index);
@@ -49,10 +51,9 @@ function listDiff (newList, oldList) {
     }
   });
 
-  // 3. newList 与 compareList 进行 插入/移动 项目，所谓移动就是通过插入和移除实现的
-  // i -> newList's index
-  // j -> compareList's index
-  let i = j = 0;
+  // 比较 newList 和 compareList，进行 插入/移动 操作
+  let i = 0;
+  let j = 0;
   while (i < newList.length) {
     let item = newList[i];
     let itemKey = getItemKey(item);
@@ -61,17 +62,20 @@ function listDiff (newList, oldList) {
     let simulateItemKey = getItemKey(simulateItem);
 
     if (simulateItem) {
-      if (itemKey === simulateItemKey) { // 刚好是一一对应
+      if (itemKey === simulateItemKey) {
         j++;
       } else {
-        if (!oldKeyIndex.hasOwnProperty(itemKey)) { // simulateKey 肯定会存在于oldList中的，itemKey不存在则为新增item
+        if (!oldKeyIndex.hasOwnProperty(itemKey)) { 
+          // itemKey 不存在于旧列表则为新增item
           insert(i, item);
-        } else { // 移动
+        } else { 
+          // 与列表中的下一个元素进行比较
           let nextSimulateItem = compareList[j + 1];
           let nextSimulateItemKey = getItemKey(nextSimulateItem);
           if(nextSimulateItemKey === itemKey) {
-            remove(i); // 最终要操作的是旧树，所以应该在相应的旧树的i的位置进行操作
-            removeSimulate(j); // 执行相应的移除工作
+            // 通过移除当前元素使得两个元素相同
+            remove(i); 
+            removeSimulate(j); 
             j++;
           } else {
             insert(i, item);

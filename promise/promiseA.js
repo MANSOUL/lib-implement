@@ -1,109 +1,116 @@
-class PromiseA {
-  constructor(callback) {
-    this.state = 'pending';
-    this.queue = [];
-    this.isPromiseA = true;
-
-    const _resolve = ret => {
-      if (this.state !== 'pending') return;
-      this.state = 'fullfillled';
-      while (this.queue.length) {
-        const p = this.queue.shift();
-        ret = p.onFullfilled && p.onFullfilled(ret);
-        if (ret && ret.isPromiseA) {
-          ret.queue = this.queue;
-          return;
+class P {
+    constructor(callback) {
+        this.status = 'pending'
+        this.resolveCallbacks = []
+        this.rejectCallbacks = []
+        const resolve = data => {
+            this.status = 'fullfilled'
+            this.data = data
+            if (data instanceof P) {
+                return data.then(resolve, reject)
+            }
+            setTimeout(() => {
+                for (let i = 0; i < this.resolveCallbacks.length; i++) {
+                    this.resolveCallbacks[i](data)
+                }
+            })
         }
-      }
-    }
-    const _reject = ret => {
-      if (this.state !== 'pending') return;
-      this.state = 'rejected';
-      while (this.queue.length) {
-        const p = this.queue.shift();
-        ret = p.onRejected && p.onRejected(ret);
-        if (ret && ret.isPromiseA) {
-          ret.queue = this.queue;
-          return;
+        const reject = reason => {
+            this.status = 'rejected'
+            this.reason = reason
+            if (reason instanceof P) {
+                return reason.then(resolve, reject)
+            }
+            setTimeout(() => {
+                for (let i = 0; i < this.rejectCallbacks.length; i++) {
+                    this.rejectCallbacks[i](reason)
+                }
+            })
         }
-      }
+        try {
+            callback(resolve, reject)
+        } catch (error) {
+            reject(error)
+        }
     }
-    callback(
-      args => setTimeout(() => _resolve(args), 0),
-      args => setTimeout(() => _reject(args), 0)
-    );
-  }
 
-  then(onFullfilled, onRejected) {
-    const handler = {};
-    if (typeof onFullfilled === 'function') {
-      handler.onFullfilled = onFullfilled;
+    then(resolve, reject) {
+        let p = null
+        resolve = typeof resolve === 'function' ? resolve : data => data
+        reject = typeof reject === 'function' ? reject : data => data
+
+        if (this.status === 'fullfilled') {
+            p = new P((p_resolve, p_reject) => {
+                setTimeout(() => {
+                    try {
+                        const result = resolve(this.reason)
+                        if (result instanceof P) {
+                            result.then(p_resolve, p_reject)
+                        } else {
+                            p_resolve(result)
+                        }
+                    } catch (error) {
+                        p_reject(error)
+                    }
+                })
+            })
+        }
+
+        if (this.status === 'rejected') {
+            p = new P((p_resolve, p_reject) => {
+                setTimeout(() => {
+                    try {
+                        const result = reject(this.reason)
+                        if (result instanceof P) {
+                            result.then(p_resolve, p_reject)
+                        } else {
+                            p_reject(result)
+                        }
+                    } catch (error) {
+                        p_reject(error)
+                    }
+                })
+            })
+        }
+
+        if (this.status === 'pending') {
+            p = new P((p_resolve, p_reject) => {
+                this.resolveCallbacks.push(data => {
+                    try {
+                        const result = resolve(data)
+                        if (result instanceof P) {
+                            result.then(p_resolve, p_reject)
+                        } else {
+                            p_resolve(result)
+                        }
+                    } catch (error) {
+                        p_reject(error)
+                    }
+                })
+
+                this.rejectCallbacks.push(reason => {
+                    try {
+                        const result = reject(reason)
+                        if (result instanceof P) {
+                            result.then(p_resolve, p_reject)
+                        } else {
+                            p_reject(result)
+                        }
+                    } catch (error) {
+                        p_reject(error)
+                    }
+                })
+            })
+        }
+
+        return p
     }
-    if (typeof onRejected === 'function') {
-      handler.onRejected = onRejected;
+
+    catch(reject) {
+        return this.then(null, reject)
     }
-    this.queue.push(handler);
-    return this;
-  }
 
-  catch (onRejected) {
-    let lastHandler = this.queue[this.queue.length - 1];
-    if (!lastHandler.onRejected) {
-      lastHandler.onRejected = onRejected;
-    } else {
-      this.then(null, onRejected);
+    finally(cb) {
+        return this.then(cb, cb)
     }
-    return this;
-  } 
-  
-  finally(onFinally) {
-    this.then(onFinally, onFinally);
-    return this;
-  }
 }
-
-PromiseA.resolve = res => {
-  return new PromiseA(resolve => {
-    resolve(res);
-  });
-}
-
-PromiseA.reject = res => {
-  return new PromiseA((resolve, reject) => {
-    reject(res);
-  });
-}
-
-PromiseA.all = ps => {
-  return new PromiseA((resolve, reject) => {
-    let result = [];
-    ps.map(p => {
-      p
-        .then(res => {
-          result.push(res);
-          if (result.length === ps.length) {
-            resolve(result);
-          }
-        })
-        .catch(err => {
-          reject(err);
-        });
-    })
-  });
-}
-
-PromiseA.race = ps => {
-  return new PromiseA((resolve, reject) => {
-    ps.map(p => {
-      p
-        .then(res => {
-          resolve(res);
-        })
-        .catch(err => {
-          reject(err);
-        });
-    })
-  });
-}
-
-module.exports = PromiseA;
